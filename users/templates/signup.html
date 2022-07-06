@@ -1,18 +1,86 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-<form action="{% url 'signup' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button>Войти</button>
-</form>
-</body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+    <div class="row">
+        <div class="col-8 col-lg-4 offset-2 offset-lg-4">
+            {% if form.errors %}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <p class="alert alert-danger"
+                           role="alert">{{ error|escape }}</p>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+            <form class="form-signin" method="post">
+                {% csrf_token %}
+                <div class="text-center">
+                    <h1 class="h3 font-weight-normal">Джуманджи</h1>
+                    <p class="h5 font-weight-light">Создайте аккаунт</p>
+                </div>
+
+                <div class="form-label-group">
+                    <p class="text-muted">Логин</p>
+                    <input type="text" name="username" id="id_username"
+                           class="form-control"
+                           required autofocus
+                            {% if form.is_bound %}
+                           value="{{ form.username.value }}"
+                            {% endif %}>
+                    <label for="id_username"></label>
+                </div>
+
+                <div class="form-label-group">
+                    <p class="text-muted">Имя</p>
+                    <input name="first_name" type="text" id="id_first_name"
+                           class="form-control" required
+                            {% if form.is_bound %}
+                           value="{{ form.first_name.value }}"
+                            {% endif %}>
+                    <label for="id_first_name"></label>
+                </div>
+
+                <div class="form-label-group">
+                    <p class="text-muted">Фамилия</p>
+                    <input type="text" name="last_name" id="id_last_name"
+                           class="form-control" required
+                            {% if form.is_bound %}
+                           value="{{ form.last_name.value }}"
+                            {% endif %}>
+                    <label for="id_last_name"></label>
+                </div>
+
+                <div class="form-label-group">
+                    <p class="text-muted">Почта</p>
+                    <input type="email" name="email" id="id_email"
+                           class="form-control"
+                            {% if form.is_bound %}
+                           value="{{ form.email.value }}"
+                            {% endif %}>
+                    <label for="id_email"></label>
+                </div>
+
+                <div class="form-label-group">
+                    <p class="text-muted">Пароль</p>
+                    <input type="password" name="password1" id="id_password1"
+                           class="form-control" required>
+                    <label for="id_password1"></label>
+                </div>
+
+                <div class="form-label-group">
+                    <p class="text-muted"> Подтвердите пароль</p>
+                    <input type="password" name="password2" id="id_password2"
+                           class="form-control" required>
+                    <label for="id_password2"></label>
+                </div>
+
+                <div class="checkbox mb-3"></div>
+                <button class="btn btn-primary btn-lg btn-block" type="submit">
+                    Зарегистрироваться
+                </button>
+            </form>
+            <div class="mt-4 text-center"><p>Есть аккаунт? <a
+                    href="{% url 'login' %}">Войдите!</a>
+            </p></div>
+        </div>
+    </div>
+{% endblock %}
 

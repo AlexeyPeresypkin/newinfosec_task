@@ -1,16 +1,31 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-<h1>Index</h1>
-{% for resource in resources %}
-<p>{{ resource }}</p>
-{% endfor %}
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <section>
+        <p class="text-center pt-1">Данные</p>
+        <div class="row">
+            <div class="col-12 col-lg-8 offset-lg-2 m-auto">
+                {% for resource in resources %}
+                    <div class="card mb-4">
+                        <div class="card-body px-4">
+                            <div class="row">
+                                <div class="col-12 col-md-8 col-lg-9">
+                                    <p class="mb-2">{{ resource.ip }}
+                                        <br> {{ resource.port }}</p>
+                                    <p>{{ resource.owner }}</p>
+                                    <p class="text-muted pt-1">{{ resource.date_edit }}</p>
+                                    <a href="{% url 'edit' resource.id %}"
+                                       class="btn btn-info mb-2 mt-4">
+                                        Изменить
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
