@@ -1,10 +1,7 @@
-from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm
 
-from ntb_task.models import Resource
-
-User = get_user_model()
+from ntb_task.models import Resource, User
 
 
 class CreationForm(UserCreationForm):
@@ -20,4 +17,15 @@ class ResourceForm(ModelForm):
             'ip',
             'port',
             'type_resource',
+        )
+
+
+class ResourceFormAdmin(ModelForm):
+    class Meta:
+        model = Resource
+        fields = (
+            'ip',
+            'port',
+            'type_resource',
+            'owner',
         )

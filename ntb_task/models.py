@@ -1,7 +1,21 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-User = get_user_model()
+
+class User(AbstractUser):
+    class UserRole:
+        USER = 'user'
+        ADMIN = 'admin'
+        choices = [
+            (USER, 'user'),
+            (ADMIN, 'admin'),
+        ]
+
+    role = models.CharField(
+        max_length=25,
+        choices=UserRole.choices,
+        default=UserRole.USER,
+    )
 
 
 class Resource(models.Model):

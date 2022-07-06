@@ -6,10 +6,8 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView
 
 from ntb_task.forms import CreationForm, ResourceForm
-from ntb_task.models import Resource
-from ntb_task.viewsmixins import IsAuthorMixin
-
-User = get_user_model()
+from ntb_task.models import Resource, User
+from ntb_task.viewsmixins import IsAuthorMixin, IsAdminMixin, is_admin
 
 
 class SignUp(CreateView):
@@ -29,7 +27,7 @@ class ResourceCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('index')
+        return reverse_lazy('resources')
 
 
 class ResourceView(LoginRequiredMixin, ListView):
@@ -39,18 +37,21 @@ class ResourceView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         owner = get_object_or_404(User, id=self.request.user.id)
+        if is_admin(owner):
+            return Resource.objects.all()
         queryset = Resource.objects.filter(owner=owner)
         return queryset
 
 
-class ResourceEdit(IsAuthorMixin, LoginRequiredMixin, UpdateView):
+class ResourceEdit(IsAdminMixin, IsAuthorMixin, LoginRequiredMixin,
+                   UpdateView):
     model = Resource
     template_name = 'resource_change.html'
     form_class = ResourceForm
     context_object_name = 'resource'
 
     def get_success_url(self):
-        return reverse_lazy('index')
+        return reverse_lazy('resources')
 
 
 def index(request):
