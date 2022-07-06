@@ -1,17 +1,47 @@
 import hashlib
-import socket
 import hmac
-
-url = '46.229.214.188'
-key = 'n5AUbpMiEGV1WvAcgvjFdm75vDqrvFlm884ZN9IEBjJshGgOouCuNx'
-email = 'aepre@yandex.ru'
-dig = hmac.new(key=b'n5AUbpMiEGV1WvAcgvjFdm75vDqrvFlm884ZN9IEBjJshGgOouCuNx', msg=b'aepre@yandex.ru', digestmod=hashlib.sha256)
-email_hmac = dig.hexdigest()
-data = f'{email}:{email_hmac}'.encode()
+import asyncio
+import websockets
+from websockets.legacy.client import WebSocketClientProtocol
 
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((url, 80))
-client_socket.send(data)
+async def consumer_handler(websocket: WebSocketClientProtocol):
+    global key
+    async for message in websocket:
+        try:
+            message = message.decode()
+            if message.startswith('Key'):
+                key = message.split()[-1]
+                await websocket.close()
+        except UnicodeDecodeError:
+            continue
 
 
+async def produce(message: str, hostname: str, port: int) -> None:
+    async with websockets.connect(f'ws://{hostname}:{port}') as ws:
+        await ws.send(message)
+        await ws.recv()
+
+
+async def consume(hostname: str, port: int) -> None:
+    websocket_resource_url = f'ws://{hostname}:{port}'
+    async with websockets.connect(websocket_resource_url) as websocket:
+        await consumer_handler(websocket)
+
+
+def hmac_data(data, key):
+    dig = hmac.new(key=key.encode(), msg=data.encode(),
+                   digestmod=hashlib.sha256)
+    result = data.encode() + b':' + dig.digest()
+    return result
+
+
+if __name__ == '__main__':
+    url = '46.229.214.188'
+    port = 80
+    key = ''
+    email = 'aepre@yandex.ru'
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(consume(hostname=url, port=port))
+    message = hmac_data(email, key)
+    loop.run_until_complete(produce(message=message, hostname=url, port=port))
