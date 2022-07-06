@@ -1,13 +1,13 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView
 
-from users.forms import CreationForm, ResourceForm
-from users.models import Resource
-from users.viewsmixins import IsAuthorMixin
+from ntb_task.forms import CreationForm, ResourceForm
+from ntb_task.models import Resource
+from ntb_task.viewsmixins import IsAuthorMixin
 
 User = get_user_model()
 
@@ -34,7 +34,7 @@ class ResourceCreate(LoginRequiredMixin, CreateView):
 
 class ResourceView(LoginRequiredMixin, ListView):
     model = Resource
-    template_name = 'index.html'
+    template_name = 'resources_list.html'
     context_object_name = 'resources'
 
     def get_queryset(self):
@@ -51,3 +51,7 @@ class ResourceEdit(IsAuthorMixin, LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('index')
+
+
+def index(request):
+    return render(request, 'index.html')

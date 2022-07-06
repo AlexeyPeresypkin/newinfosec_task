@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load tags_extras %}
+{% block content %}
+    {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <p class="alert alert-danger"
+                   role="alert">{{ field.label_tag }} {{ error|escape }}</p>
+            {% endfor %}
+        {% endfor %}
+    {% endif %}
+    <div class="col-12 col-lg-8 offset-lg-2 m-auto">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                {{ field.label }}
+                {{ field|add_class:'custom-select mr-sm-2' }}
+            {% endfor %}
+            <div class="form-group mt-2">
+                <input type="submit" class="btn btn-info"
+                       value="Создать">
+            </div>
+        </form>
+    </div>
+{% endblock %}

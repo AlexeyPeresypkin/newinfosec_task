@@ -22,7 +22,8 @@ class Resource(models.Model):
     )
     type_resource = models.CharField(
         max_length=3,
-        choices=TYPE_OF_RESOURCE
+        choices=TYPE_OF_RESOURCE,
+        verbose_name='Тип ресурса'
     )
     owner = models.ForeignKey(
         User,
@@ -39,5 +40,6 @@ class Resource(models.Model):
         return f'{self.owner} {self.type_resource}'
 
     class Meta:
+        ordering = ['-date_edit']
         verbose_name = 'Ресурс'
         verbose_name_plural = 'Ресурсы'

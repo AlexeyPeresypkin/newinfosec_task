@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm
 
-from users.models import Resource
+from ntb_task.models import Resource
 
 User = get_user_model()
 
