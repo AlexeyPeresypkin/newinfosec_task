@@ -17,21 +17,13 @@ def hmac_data(data, key):
     return result
 
 
-async def register(ws: WebSocketClientProtocol) -> None:
-    servers.add(ws)
-    logging.info(f'{ws.remote_address} connects')
-
-
 async def create_sock(hostname: str, port: int) -> None:
     async with websockets.connect(f'ws://{hostname}:{port}') as ws:
-        await register(ws)
         await consume(ws)
 
 
-async def send_answer(message: str) -> None:
-    if servers:
-        for server in servers:
-            await server.send(message)
+async def send_answer(ws, message: str) -> None:
+    await ws.send(message)
 
 
 async def consume(ws: WebSocketClientProtocol) -> None:
@@ -42,7 +34,7 @@ async def consume(ws: WebSocketClientProtocol) -> None:
                 if message.startswith('Key'):
                     key = message.split()[-1]
                     message = hmac_data(email, key)
-                    await send_answer(message)
+                    await send_answer(ws, message)
             except UnicodeDecodeError:
                 continue
     except ConnectionClosedError:
@@ -50,10 +42,8 @@ async def consume(ws: WebSocketClientProtocol) -> None:
 
 
 if __name__ == '__main__':
-    servers = set()
     url = '46.229.214.188'
     port = 80
-    key = ''
     email = 'aepre@yandex.ru'
     loop = asyncio.get_event_loop()
     loop.run_until_complete(create_sock(url, port))
