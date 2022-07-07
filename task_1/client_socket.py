@@ -1,32 +1,13 @@
 import hashlib
 import hmac
 import asyncio
+import logging
+
 import websockets
+from websockets.exceptions import ConnectionClosedError
 from websockets.legacy.client import WebSocketClientProtocol
 
-
-async def consumer_handler(websocket: WebSocketClientProtocol):
-    global key
-    async for message in websocket:
-        try:
-            message = message.decode()
-            if message.startswith('Key'):
-                key = message.split()[-1]
-                await websocket.close()
-        except UnicodeDecodeError:
-            continue
-
-
-async def produce(message: str, hostname: str, port: int) -> None:
-    async with websockets.connect(f'ws://{hostname}:{port}') as ws:
-        await ws.send(message)
-        await ws.recv()
-
-
-async def consume(hostname: str, port: int) -> None:
-    websocket_resource_url = f'ws://{hostname}:{port}'
-    async with websockets.connect(websocket_resource_url) as websocket:
-        await consumer_handler(websocket)
+logging.basicConfig(level=logging.INFO)
 
 
 def hmac_data(data, key):
@@ -36,12 +17,44 @@ def hmac_data(data, key):
     return result
 
 
+async def register(ws: WebSocketClientProtocol) -> None:
+    servers.add(ws)
+    logging.info(f'{ws.remote_address} connects')
+
+
+async def create_sock(hostname: str, port: int) -> None:
+    async with websockets.connect(f'ws://{hostname}:{port}') as ws:
+        await register(ws)
+        await consume(ws)
+
+
+async def send_answer(message: str) -> None:
+    if servers:
+        for server in servers:
+            await server.send(message)
+
+
+async def consume(ws: WebSocketClientProtocol) -> None:
+    try:
+        async for message in ws:
+            try:
+                message = message.decode()
+                if message.startswith('Key'):
+                    key = message.split()[-1]
+                    message = hmac_data(email, key)
+                    await send_answer(message)
+            except UnicodeDecodeError:
+                continue
+    except ConnectionClosedError:
+        logging.info(f'{ws.remote_address} disconnects')
+
+
 if __name__ == '__main__':
+    servers = set()
     url = '46.229.214.188'
     port = 80
     key = ''
     email = 'aepre@yandex.ru'
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(consume(hostname=url, port=port))
-    message = hmac_data(email, key)
-    loop.run_until_complete(produce(message=message, hostname=url, port=port))
+    loop.run_until_complete(create_sock(url, port))
+    loop.run_forever()
